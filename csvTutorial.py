@@ -85,14 +85,14 @@ def printRows (firstrowID = None, lastrowID = None):
         # And define actions that should be done them.
         # I chose to declare every row as 'row', but this name could be whatever.
         for row in data[firstrowID:lastrowID]:
-            tempString = 'RowID: ' + row[0] + '\n'
-            tempString += 'Question 1: ' + row[3] + '\n'
-            tempString += 'Question 2: ' + row[4] + '\n'
-            tempString += 'Is duplicate: '
+            tempString =    'RowID: '       + row[0] + '\n'
+            tempString +=   'Question 1: '  + row[3] + '\n'
+            tempString +=   'Question 2: '  + row[4] + '\n'
+            tempString +=   'Is duplicate: '
             if (int(row[5]) == 1):
                 tempString += 'Yes' + '\n'
             else:
-                tempString += 'No' + '\n'
+                tempString += 'No'  + '\n'
 
             # See the next function, uprint
             uprint(tempString)
@@ -108,5 +108,3 @@ def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
     else:
         f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
         print(*map(f, objects), sep=sep, end=end, file=file)
-
-printRows(0,5)
