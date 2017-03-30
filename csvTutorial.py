@@ -13,7 +13,7 @@ trainData = ''
 
 # Create a function called main. In order to run the code in this script
 # We will call on the main() function in the bottom of the code.
-def printRows (firstrowID = None, lastrowID = None):
+def printRows (filename, firstrowID = None, lastrowID = None):
     """
     Parameters: (firstrowID = None, lastrowID = None)
 
@@ -54,51 +54,36 @@ def printRows (firstrowID = None, lastrowID = None):
     # provide code heirarchy. All code on this indentation level
     # will pertain to this function.
 
-    # Using a 'with' loop, we will open the 'train.csv' file under the name
-    # trainData. The 'r' determines how the machine reads the code, and is more
-    # technical. I believe this has changed from python 2.7 -> 3.5.2.
-    # Code will not exit this while loop (AFAIK), before the trainData variable
-    # is closed. However, once closed, trainData cannot be accessed, and the
-    # data must be saved in another variable (AFAIK).
-    with open ('train.csv', 'r', encoding='utf8') as trainOpen:
+    data = readCSVfile(filename)
 
-        # With the train file open, we will generate a reader object using
-        # the trainOpen variable. We store this object as trainReader, and
-        # tell it to delimit using the comma sign.
-        trainReader = csv.reader(trainOpen, delimiter = ',')
-        data = list(trainReader)
+    # We want to save the first row of the data as a header, so that
+    # we can use this for any models we may want to build. Typically,
+    # the first row of csv files will descripe the setup of the csv rows.
+    dataHeader = data[0]
 
-        # We want to save the first row of the data as a header, so that
-        # we can use this for any models we may want to build. Typically,
-        # the first row of csv files will descripe the setup of the csv rows.
-        dataHeader = data[0]
+    if(firstrowID == None or firstrowID <= 0):
+        firstrowID = 1
+    if(lastrowID == None or lastrowID <= firstrowID):
+        lastrowID = firstrowID + 101
+    else:
+        lastrowID += 1
 
-        if(firstrowID == None or firstrowID <= 0):
-            firstrowID = 1
-        if(lastrowID == None or lastrowID <= firstrowID):
-            lastrowID = firstrowID + 101
+
+    # By using a for loop we can iterate over every row in the reader object
+    # And define actions that should be done them.
+    # I chose to declare every row as 'row', but this name could be whatever.
+    for row in data[firstrowID:lastrowID]:
+        tempString =    'RowID: '       + row[0] + '\n'
+        tempString +=   'Question 1: '  + row[3] + '\n'
+        tempString +=   'Question 2: '  + row[4] + '\n'
+        tempString +=   'Is duplicate: '
+        if (int(row[5]) == 1):
+            tempString += 'Yes' + '\n'
         else:
-            lastrowID += 1
+            tempString += 'No'  + '\n'
 
-
-        # By using a for loop we can iterate over every row in the reader object
-        # And define actions that should be done them.
-        # I chose to declare every row as 'row', but this name could be whatever.
-        for row in data[firstrowID:lastrowID]:
-            tempString =    'RowID: '       + row[0] + '\n'
-            tempString +=   'Question 1: '  + row[3] + '\n'
-            tempString +=   'Question 2: '  + row[4] + '\n'
-            tempString +=   'Is duplicate: '
-            if (int(row[5]) == 1):
-                tempString += 'Yes' + '\n'
-            else:
-                tempString += 'No'  + '\n'
-
-            # See the next function, uprint
-            uprint(tempString)
-
-        trainOpen.close()
-
+        # See the next function, uprint
+        uprint(tempString)
 
 # This is a print function that allows us to circumvent issues with annoying characters
 def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
@@ -108,3 +93,26 @@ def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
     else:
         f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
         print(*map(f, objects), sep=sep, end=end, file=file)
+
+def baseLine (list, columnindex):
+    baseline = sum(int(row[columnindex]) for row in list)/len(list)
+    return baseline
+
+def readCSVfile (filename):
+    data = []
+
+    # Using a 'with' loop, we will open the 'train.csv' file under the name
+    # trainData. The 'r' determines how the machine reads the code, and is more
+    # technical. I believe this has changed from python 2.7 -> 3.5.2.
+    # Code will not exit this while loop (AFAIK), before the trainData variable
+    # is closed. However, once closed, trainData cannot be accessed, and the
+    # data must be saved in another variable (AFAIK).
+    with open (filename, 'r', encoding='utf8') as trainOpen:
+        # With the train file open, we will generate a reader object using
+        # the trainOpen variable. We store this object as trainReader, and
+        # tell it to delimit using the comma sign.
+        trainReader = csv.reader(trainOpen, delimiter = ',')
+        data = list(trainReader)
+
+        trainOpen.close()
+    return data
