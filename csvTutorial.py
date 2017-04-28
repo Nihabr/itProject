@@ -2,8 +2,7 @@
 import csv
 import sys
 import itertools as iterT
-from nltk.corpus import stopwords
-from nltk.tokenize import wordpunct_tokenize
+import nltk
 
 # Define some variables we will need for later
 # Variables that are declared inside a function will not be usable outside of
@@ -93,8 +92,12 @@ def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
         f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
         print(*map(f, objects), sep=sep, end=end, file=file)
 
-def baseLine (list, columnindex):
-    baseline = sum(int(row[columnindex]) for row in list)/len(list)
+def baseLine (dataFrame, columnTitle):
+
+    baseline = sum(dataFrame[columnTitle])/len(dataFrame)
+    if (baseline < 0.5):
+        baseline = 1 - baseline
+    print ('Baseline: ' + '{0:.2f}%'.format(baseline * 100))
     return baseline
 
 def readCSVfile (filename):
@@ -159,9 +162,6 @@ def normalized_word_share(row):
     '''
     w1 = set(map(lambda word: word.lower().strip(), row['question1'].split(" ")))
     w2 = set(map(lambda word: word.lower().strip(), row['question2'].split(" ")))
-    print('len(w1): ' + str(len(w1)))
-    print('len(w2): ' + str(len(w2)))
-    print('len(w1 & w2): ' + str(len(w1 & w2)))
 
     return 1.0 * len(w1 & w2)/(len(w1) + len(w2))
 
@@ -179,3 +179,33 @@ def word_match_share(row):
     shared_words_in_q2 = [w for w in q2words.keys() if w in q1words]
     R = (len(shared_words_in_q1) + len(shared_words_in_q2))/(len(q1words) + len(q2words))
     return R
+
+def getQlength (row):
+    return (len(row['question1']) + len(row['question2']))/2
+
+def proper_noun_share (row):
+
+    #print('Row: ' + bytearray(str(row[0]), 'ascii').decode('utf8'))
+    w1 = set(map(lambda word: word.lower().strip(), row['question1'].split()))
+    w2 = set(map(lambda word: word.lower().strip(), row['question2'].split()))
+
+    #print (len(w1))
+    #print (len(w2))
+
+    w1 = nltk.pos_tag(w1)
+    w2 = nltk.pos_tag(w2)
+
+    #for word, pos in w1:
+    #    print('Word: ' + bytearray(word, 'ascii').decode('utf8') + ' POS: ' + pos)
+
+    w1 = set([word for word, pos in w1 if pos == 'NN'])
+    w2 = set([word for word, pos in w2 if pos == 'NN'])
+
+
+    #print (len(w1)+len(w2))
+    lengthSum = (len(w1) + len(w2))
+
+    if lengthSum < 1:
+        lengthSum = 1
+
+    return 1.0 * len(w1 & w2)/lengthSum
